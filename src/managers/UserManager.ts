@@ -20,7 +20,7 @@ export class UserManager {
 	addUser(name: string, socket: Socket) {
 		this.users.push({ name, socket });
 		this.queue.push(socket.id);
-		socket.send("lobby");
+		socket.emit("lobby");
 		this.clearQueue();
 		this.initHandler(socket);
 	}
@@ -56,11 +56,20 @@ export class UserManager {
 
 	initHandler(socket: Socket) {
 		socket.on("offer", (data) => {
-			this.RoomManager.onOffer(data.roomID, data.sdp);
+			this.RoomManager.onOffer(data.roomID, data.sdp, socket);
 		});
 
 		socket.on("answer", (data) => {
-			this.RoomManager.onAnswer(data.roomID, data.sdp);
+			this.RoomManager.onAnswer(data.roomID, data.sdp, socket);
+		});
+
+		socket.on("add-ice-candidate", (data) => {
+			this.RoomManager.onIceCandidate(
+				data.roomID,
+				socket,
+				data.candidate,
+				data.type
+			);
 		});
 	}
 }
